@@ -133,6 +133,39 @@
                  padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; }
   .badge-upd { font-size: 11px; font-weight: bold; color: hsl(var(--accent)); background: hsl(var(--accent) / 0.12);
                border-radius: 10px; padding: 2px 8px; }
+  /* parts: submit -> review -> close */
+  .need { font-size: 13px; font-weight: 700; color: hsl(var(--accent)); margin-top: 6px; }
+  .parts { margin: 10px 0; border: 1px solid var(--c-line); border-radius: 8px; overflow: hidden; }
+  .parts-head { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--c-muted);
+                padding: 6px 10px; background: hsl(var(--muted) / 0.6); display: flex; justify-content: space-between; }
+  .part { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--c-line); flex-wrap: wrap; }
+  .part:first-of-type { border-top: 0; }
+  .part .pn { font-weight: 700; font-size: 14px; min-width: 120px; }
+  .part .pnote { flex: 1 1 220px; font-size: 13px; color: var(--c-muted); white-space: pre-wrap; }
+  .pchip { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+  .pchip.open { background: hsl(var(--muted)); color: var(--c-muted); }
+  .pchip.submitted { background: hsl(var(--primary) / 0.35); color: hsl(var(--primary-foreground)); }
+  .pchip.accepted { background: hsl(var(--accent) / 0.15); color: hsl(var(--accent)); }
+  .pchip.sentback { background: hsl(var(--destructive) / 0.12); color: hsl(var(--destructive)); }
+  .pact { display: flex; gap: 6px; flex-wrap: wrap; width: 100%; }
+  .pbtn { border: 1px solid hsl(var(--input)); background: hsl(var(--popover)); border-radius: 6px; padding: 5px 10px;
+          font: inherit; font-size: 13px; cursor: pointer; }
+  .pbtn.ok { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); border-color: hsl(var(--accent)); }
+  .pbtn.no { color: hsl(var(--destructive)); border-color: hsl(var(--destructive) / 0.5); }
+  .pbtn:disabled { opacity: .6; }
+  .sbform { width: 100%; display: none; gap: 6px; flex-direction: column; }
+  .sbform.on { display: flex; }
+  .sbform input { padding: 7px 9px; border: 1px solid hsl(var(--input)); border-radius: 6px; font: inherit; font-size: 13px; }
+  .sbbox { background: hsl(var(--destructive) / 0.08); border: 1px solid hsl(var(--destructive) / 0.35); border-radius: 8px;
+              padding: 8px 10px; margin: 10px 0; font-size: 13px; }
+  .sbbox b { color: hsl(var(--destructive)); }
+  .ready { background: hsl(var(--accent) / 0.1); border: 1px solid hsl(var(--accent) / 0.4); border-radius: 8px;
+           padding: 8px 10px; margin: 10px 0; font-size: 13px; font-weight: 700; color: hsl(var(--accent)); }
+  .waitnote { font-size: 13px; color: var(--c-muted); margin: 8px 0; }
+  .save.alt { background: hsl(var(--popover)); color: var(--c-text); border: 1px solid hsl(var(--input)); font-weight: 400; }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .progress { font-size: 13px; margin-top: 4px; color: var(--c-text); }
+  .progress .wo { color: var(--c-muted); }
   /* (i) icon and its tooltip */
   .tip { position: relative; display: inline-flex; align-self: center; vertical-align: middle; margin-left: 6px; }
   .info { width: 24px; height: 24px; border-radius: 50%; border: 1px solid hsl(var(--input)); background: hsl(var(--popover));
@@ -296,7 +329,9 @@ var TEXT = {
     ['New', 'The action was created since your last visit.'],
     ['Updated', 'Someone else posted an update since your last visit.'],
     ['Status', 'Only an Accountable person can change the status. Done actions leave this list.'],
-    ['Order', 'Overdue first, then Needs update, then by due date.']
+    ['Order', 'Overdue first, then Needs update, then by due date.'],
+    ['Parts', 'When several people are Responsible, each submits their part with a comment. The Accountable person accepts it or sends it back, then closes the action.'],
+    ['To review / close', 'Actions where you are Accountable and someone has submitted their part, or every part is accepted and the action is ready to close.']
   ],
   helpFyi: [
     ['Open', 'Actions you are Informed on that are not Done yet.'],
@@ -332,6 +367,20 @@ var TEXT = {
   allPeople: 'All people',
   allMeetings: 'All meetings',
   loading: 'Loading your actions…',
+  /* parts: submit -> review -> close */
+  partsTitle: 'Parts',
+  partState: { open: 'Not submitted', sentback: 'Sent back', submitted: 'Waiting review', accepted: 'Accepted' },
+  submitPart: 'Submit my part as done',
+  submitPlaceholder: 'What did you do? (required to submit your part)',
+  needComment: 'Please add a comment about what you did before submitting.',
+  submitted: 'Submitted ✓ – waiting for review',
+  waitingReview: function (who) { return 'Your part is waiting for ' + (who || 'the Accountable person') + '\'s review.'; },
+  sentBackBy: function (who, when) { return 'Sent back' + (who ? ' by ' + who : '') + (when ? ' on ' + when : '') + ':'; },
+  accept: 'Accept', sendBack: 'Send back', sendBackReason: 'Reason for sending back (required)',
+  confirmSendBack: 'Send back', cancel: 'Cancel',
+  readyToClose: 'All parts accepted – ready to close. Set the status to Done to close it.',
+  closeEarly: 'Not all parts are accepted yet. Close this action as Done anyway?',
+  toReview: 'To review / close',
   noLinkTitle: 'Action Tracker',
   noLink: 'Please open your page using the button in your latest reminder email.',
   offlineTitle: 'Could not load',
@@ -376,7 +425,17 @@ var SAMPLE = {
    "stale": 0,
    "flags": "Overdue",
    "isNew": false,
-   "isNewAction": false
+   "isNewAction": false,
+   "solo": true,
+   "parts": [],
+   "need": "",
+   "myPart": "",
+   "canSubmit": false,
+   "canReview": false,
+   "reviewCount": 0,
+   "ready": false,
+   "progress": "",
+   "sentBack": null
   },
   {
    "id": "40",
@@ -399,7 +458,17 @@ var SAMPLE = {
    "stale": 1,
    "flags": "Overdue · No update yet",
    "isNew": false,
-   "isNewAction": false
+   "isNewAction": false,
+   "solo": true,
+   "parts": [],
+   "need": "",
+   "myPart": "",
+   "canSubmit": false,
+   "canReview": false,
+   "reviewCount": 0,
+   "ready": false,
+   "progress": "",
+   "sentBack": null
   },
   {
    "id": "35",
@@ -422,7 +491,17 @@ var SAMPLE = {
    "stale": 0,
    "flags": "",
    "isNew": true,
-   "isNewAction": false
+   "isNewAction": false,
+   "solo": true,
+   "parts": [],
+   "need": "",
+   "myPart": "",
+   "canSubmit": false,
+   "canReview": false,
+   "reviewCount": 0,
+   "ready": false,
+   "progress": "",
+   "sentBack": null
   },
   {
    "id": "36",
@@ -445,7 +524,36 @@ var SAMPLE = {
    "stale": 1,
    "flags": "No update yet",
    "isNew": false,
-   "isNewAction": false
+   "isNewAction": false,
+   "solo": false,
+   "parts": [
+    {
+     "name": "User",
+     "state": "sentback",
+     "when": "16 Oct 2026, 4:10 PM",
+     "note": "Please attach the interview schedule.",
+     "by": "Taylor"
+    },
+    {
+     "name": "Casey",
+     "state": "accepted",
+     "when": "14 Oct 2026, 2:00 PM",
+     "note": "Two candidates shortlisted.",
+     "by": "Taylor"
+    }
+   ],
+   "need": "Sent back – please redo and resubmit",
+   "myPart": "sentback",
+   "canSubmit": true,
+   "canReview": false,
+   "reviewCount": 0,
+   "ready": false,
+   "progress": "1/2 accepted · 1 not submitted",
+   "sentBack": {
+    "by": "Taylor",
+    "when": "16 Oct 2026, 4:10 PM",
+    "note": "Please attach the interview schedule."
+   }
   },
   {
    "id": "41",
@@ -468,7 +576,39 @@ var SAMPLE = {
    "stale": 0,
    "flags": "",
    "isNew": true,
-   "isNewAction": true
+   "isNewAction": true,
+   "solo": false,
+   "parts": [
+    {
+     "name": "Sam",
+     "state": "accepted",
+     "when": "15 Oct 2026, 11:00 AM",
+     "note": "Checklist shared with all sites.",
+     "by": "User"
+    },
+    {
+     "name": "Jordan",
+     "state": "submitted",
+     "when": "16 Oct 2026, 9:40 AM",
+     "note": "Agenda drafted and sent for sign-off.",
+     "by": "Jordan"
+    },
+    {
+     "name": "Taylor",
+     "state": "open",
+     "when": "",
+     "note": "",
+     "by": ""
+    }
+   ],
+   "need": "1 to review",
+   "myPart": "",
+   "canSubmit": false,
+   "canReview": true,
+   "reviewCount": 1,
+   "ready": false,
+   "progress": "1/3 accepted · 1 waiting review · 1 not submitted",
+   "sentBack": null
   },
   {
    "id": "42",
@@ -492,7 +632,17 @@ var SAMPLE = {
    "stale": 1,
    "flags": "No update for 9 days",
    "isNew": false,
-   "isNewAction": false
+   "isNewAction": false,
+   "solo": true,
+   "parts": [],
+   "need": "",
+   "myPart": "",
+   "canSubmit": false,
+   "canReview": false,
+   "reviewCount": 0,
+   "ready": false,
+   "progress": "",
+   "sentBack": null
   }
  ],
  "fyi": [
@@ -513,7 +663,10 @@ var SAMPLE = {
    "flags": "Overdue",
    "isNew": true,
    "responsible": "Team A",
-   "isNewAction": false
+   "isNewAction": false,
+   "parts": [],
+   "progress": "",
+   "waitingOn": ""
   },
   {
    "id": "33",
@@ -532,7 +685,10 @@ var SAMPLE = {
    "flags": "No update yet",
    "isNew": false,
    "responsible": "Jordan",
-   "isNewAction": false
+   "isNewAction": false,
+   "parts": [],
+   "progress": "",
+   "waitingOn": ""
   },
   {
    "id": "37",
@@ -551,7 +707,10 @@ var SAMPLE = {
    "flags": "",
    "isNew": false,
    "responsible": "Morgan",
-   "isNewAction": false
+   "isNewAction": false,
+   "parts": [],
+   "progress": "",
+   "waitingOn": ""
   },
   {
    "id": "38",
@@ -570,7 +729,10 @@ var SAMPLE = {
    "flags": "",
    "isNew": true,
    "responsible": "Casey",
-   "isNewAction": false
+   "isNewAction": false,
+   "parts": [],
+   "progress": "",
+   "waitingOn": ""
   },
   {
    "id": "39",
@@ -589,7 +751,10 @@ var SAMPLE = {
    "flags": "Overdue · No update for 9 days",
    "isNew": false,
    "responsible": "Jordan, Team B",
-   "isNewAction": false
+   "isNewAction": false,
+   "parts": [],
+   "progress": "2/3 accepted · 1 waiting review",
+   "waitingOn": "Jordan – to review 1 ⚠ 5 days"
   },
   {
    "id": "43",
@@ -608,7 +773,10 @@ var SAMPLE = {
    "flags": "",
    "isNew": false,
    "responsible": "Team A",
-   "isNewAction": true
+   "isNewAction": true,
+   "parts": [],
+   "progress": "",
+   "waitingOn": ""
   },
   {
    "id": "44",
@@ -627,7 +795,10 @@ var SAMPLE = {
    "flags": "No update yet",
    "isNew": false,
    "responsible": "Morgan",
-   "isNewAction": true
+   "isNewAction": true,
+   "parts": [],
+   "progress": "",
+   "waitingOn": ""
   }
  ],
  "done": [
@@ -664,7 +835,8 @@ var SAMPLE = {
   "created": 3,
   "completed": 3,
   "updated": 4
- }
+ },
+ "reviewDays": 3
 };
 window.addEventListener('hashchange', function () { location.reload(); });
 if (location.hash === '#error') SAMPLE = { error: 'This link is not valid any more. Please use the button in your latest reminder email.' };
@@ -742,22 +914,50 @@ function summaryLine(a) {
     '<span class="status">' + esc(a.status) + '</span></span></summary>';
 }
 
+/* The list of parts (one per Responsible person). On the Accountable person's card: Accept / Send back buttons. */
+function partsBlock(a, i, canReview) {
+  if (!a.parts || !a.parts.length) return '';
+  return '<div class="parts"><div class="parts-head"><span>' + TEXT.partsTitle + '</span><span>' + esc(a.progress || '') + '</span></div>' +
+    a.parts.map(function (p, j) {
+      var review = canReview && p.state === 'submitted';
+      return '<div class="part"><span class="pn">' + esc(p.name) + '</span>' +
+        '<span class="pchip ' + p.state + '">' + esc(TEXT.partState[p.state] || p.state) + '</span>' +
+        '<span class="pnote">' + (p.note ? esc(p.note) : '') + (p.when ? ' <span class="by">' + esc(p.when) +
+          (p.by && p.by !== p.name ? ' · ' + esc(p.by) : '') + '</span>' : '') + '</span>' +
+        (review
+          ? '<div class="pact"><button class="pbtn ok" onclick="review(' + i + ',' + j + ',\'accept\',this)">' + TEXT.accept + '</button>' +
+            '<button class="pbtn no" onclick="toggleSendBack(' + i + ',' + j + ')">' + TEXT.sendBack + '</button></div>' +
+            '<div class="sbform" id="sb' + i + '_' + j + '"><input type="text" maxlength="500" placeholder="' + esc(TEXT.sendBackReason) + '">' +
+            '<div class="pact"><button class="pbtn no" onclick="review(' + i + ',' + j + ',\'sendback\',this)">' + TEXT.confirmSendBack + '</button>' +
+            '<button class="pbtn" onclick="toggleSendBack(' + i + ',' + j + ')">' + TEXT.cancel + '</button></div></div>'
+          : '') +
+        '</div>';
+    }).join('') + '</div>';
+}
+
 /* A card on the "My actions" tab */
 function myCard(a, i) {
   var statusCtl = a.canStatus
     ? '<select><option value="">' + TEXT.statusUnchanged + '</option>' +
       DATA.statuses.map(function (s) { return '<option>' + esc(s) + '</option>'; }).join('') + '</select>'
     : '<span class="note">' + esc(TEXT.onlyAccountable(a.accountable)) + '</span>';
-  return '<details class="card" id="m' + i + '">' + summaryLine(a) +
+  var buttons = (a.canSubmit ? '<button class="save" onclick="submitPart(' + i + ')">' + TEXT.submitPart + '</button>' : '') +
+    '<button class="save' + (a.canSubmit ? ' alt' : '') + '" onclick="save(' + i + ')">' + TEXT.save + '</button>';
+  return '<details class="card" id="m' + i + '" data-aid="' + esc(a.id) + '">' + summaryLine(a) +
     '<div class="body">' + originLine(a) +
     '<div class="meta">Your role: <b class="role">' + esc(a.roles.join(', ')) +
      '</b>' +
     (a.due ? ' · Due: ' + esc(a.due) : '') +
     (a.priority ? ' · Priority: ' + esc(a.priority) : '') + '</div>' +
+    (a.need ? '<div class="need">' + esc(a.need) + '</div>' : '') +
     (a.flags ? '<div class="flag">' + esc(a.flags) + '</div>' : '') +
+    (a.sentBack ? '<div class="sbbox"><b>' + esc(TEXT.sentBackBy(a.sentBack.by, a.sentBack.when)) + '</b> ' + esc(a.sentBack.note) + '</div>' : '') +
+    (a.ready && a.canStatus ? '<div class="ready">' + esc(TEXT.readyToClose) + '</div>' : '') +
+    partsBlock(a, i, a.canReview) +
+    (a.myPart === 'submitted' ? '<div class="waitnote">' + esc(TEXT.waitingReview(a.accountable)) + '</div>' : '') +
     lastBlock(a) +
-    '<textarea maxlength="2000" placeholder="' + esc(TEXT.updatePlaceholder) + '"></textarea>' +
-    '<div class="row">' + statusCtl + '<button class="save" onclick="save(' + i + ')">' + TEXT.save + '</button></div>' +
+    '<textarea maxlength="2000" placeholder="' + esc(a.canSubmit ? TEXT.submitPlaceholder : TEXT.updatePlaceholder) + '"></textarea>' +
+    '<div class="row">' + statusCtl + '<div class="btns">' + buttons + '</div></div>' +
     '<div class="msg"></div></div></details>';
 }
 
@@ -768,7 +968,10 @@ function fyiCard(a, i) {
     '<div class="meta">' + (a.myRole ? 'Your role: <b class="role">' + esc(a.myRole) + '</b> · ' : '') +
     'Responsible: ' + esc(a.responsible || '—') + ' · Accountable: ' + esc(a.accountable || '—') +
     (a.due ? ' · Due: ' + esc(a.due) : '') + (a.priority ? ' · Priority: ' + esc(a.priority) : '') + '</div>' +
+    (a.progress ? '<div class="progress">' + esc(a.progress) +
+      (a.waitingOn ? ' <span class="wo">· Waiting on: ' + esc(a.waitingOn) + '</span>' : '') + '</div>' : '') +
     (a.flags ? '<div class="flag">' + esc(a.flags) + '</div>' : '') +
+    partsBlock(a, i, false) +
     lastBlock(a) + '</div></details>';
 }
 
@@ -881,6 +1084,8 @@ function minePanel() {
     ['stale', 'Needs update', c(function (a) { return a.stale; })],
     ['ra', "I'm responsible/accountable", c(function (a) { return a.ra; })]
   ];
+  var nrv = c(function (a) { return a.canReview || (a.ready && a.canStatus); });
+  if (nrv) chips.splice(1, 0, ['rv', TEXT.toReview, nrv]);
   return '<p class="sub">' + TEXT.mineIntro + '</p>' +
     '<div class="jumpbar" id="jump-mine"></div>' +
     '<div class="chips">' + chips.map(function (x) {
@@ -947,6 +1152,7 @@ function matches(tab, a) {
   if (s.f === 'overdue' && !a.overdue) return false;
   if (s.f === 'stale' && !a.stale) return false;
   if (s.f === 'ra' && !a.ra) return false;
+  if (s.f === 'rv' && !(a.canReview || (a.ready && a.canStatus))) return false;
   if (s.f === 'new' && !a.isNew) return false;
   if (s.f === 'created' && !a.isNewAction) return false;
   if (tab === 'fyi') {
@@ -1041,40 +1247,108 @@ function observe() {
 }
 
 /* ---------------- saving an update ---------------- */
-function save(i) {
-  var a = DATA.mine[i], c = document.getElementById('m' + i);
-  var t = $('textarea', c), s = $('.row select', c), b = $('.save', c), m = $('.msg', c);
-  var txt = t.value.trim(), st = s ? s.value : '';
-  if (!txt) { m.style.color = 'var(--c-danger)'; m.textContent = TEXT.writeFirst; return; }
-  b.disabled = true; b.textContent = TEXT.saving; m.textContent = '';
-
-  var ok = function (when) {
-    a.latest = txt; a.lastWhen = when; a.lastBy = DATA.name; a.stale = 0; a.isNew = false;
-    if (st) a.status = st;
-    $('.last', c).outerHTML = lastBlock(a);
-    $('.status', c).textContent = a.status;
-    var link = $('.tocl[data-id="m' + i + '"]'); if (link) link.classList.add('done');
-    t.value = ''; if (s) s.value = '';
-    b.disabled = false; b.textContent = TEXT.save; m.style.color = 'var(--c-ok)'; m.textContent = TEXT.saved;
-  };
-  var fail = function (e) {
-    b.disabled = false; b.textContent = TEXT.save; m.style.color = 'var(--c-danger)';
-    m.textContent = 'Could not save: ' + (e && e.message ? e.message : e);
-  };
+/* Sends a request to the script. Same for the Google page (google.script.run) and the GitHub page (fetch). */
+function post(payload, ok, fail) {
   if (GAS) {
-    google.script.run.withSuccessHandler(ok).withFailureHandler(fail).submitUpdate(DATA.key, a.id, txt, st);
+    payload.k = DATA.key;
+    google.script.run
+      .withSuccessHandler(function (r) { if (r && r.ok) ok(r); else fail({ message: (r && r.error) || 'Unknown error' }); })
+      .withFailureHandler(fail).apiCall(payload);
   } else if (REMOTE) {
+    payload.k = KEY;
     fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },   /* plain text avoids an extra browser check */
-      body: JSON.stringify({ action: 'update', k: KEY, id: a.id, text: txt, status: st })
+      body: JSON.stringify(payload)
     })
       .then(function (r) { return r.json(); })
-      .then(function (r) { if (r.ok) ok(r.when); else fail({ message: r.error }); })
+      .then(function (r) { if (r.ok) ok(r); else fail({ message: r.error }); })
       .catch(function () { fail({ message: 'no connection, please try again' }); });
   } else {
-    setTimeout(function () { ok('just now (preview – not saved)'); }, 400);
+    setTimeout(function () { ok({ when: 'just now (preview – not saved)', preview: true }); }, 400);
   }
+}
+
+/* Reloads the data after a change, keeps the same tab/filters and re-opens the card with a message. */
+function refresh(openId, msg) {
+  var done = function (d) {
+    if (d && d.ok !== false && !d.error) DATA = d;
+    render();
+    var idx = -1;
+    DATA.mine.forEach(function (a, k) { if (a.id === openId && idx < 0) idx = k; });
+    if (idx >= 0) {
+      var c = document.getElementById('m' + idx);
+      if (c) { c.open = true; var m = $('.msg', c); if (m) { m.style.color = 'var(--c-ok)'; m.textContent = msg; } }
+    } else if (msg) {
+      var top = document.getElementById('p-mine');
+      if (top) top.insertAdjacentHTML('afterbegin', '<p class="msg" style="color:var(--c-ok)">' + esc(msg) + '</p>');
+    }
+  };
+  if (GAS) google.script.run.withSuccessHandler(done).withFailureHandler(function () { done(null); }).pageDataFor(DATA.key);
+  else if (REMOTE) fetch(API + '?api=data&k=' + encodeURIComponent(KEY)).then(function (r) { return r.json(); }).then(done).catch(function () { done(null); });
+  else done(null);
+}
+
+function busy(c, on, label) {
+  $$('button.save, .pbtn', c).forEach(function (b) { b.disabled = on; });
+  var m = $('.msg', c);
+  if (on && m) { m.style.color = 'var(--c-muted)'; m.textContent = label || TEXT.saving; }
+}
+function showErr(c, e) {
+  busy(c, false);
+  var m = $('.msg', c); m.style.color = 'var(--c-danger)';
+  m.textContent = 'Could not save: ' + (e && e.message ? e.message : e);
+}
+
+/* Post an update (and, for the Accountable person, optionally a status) */
+function save(i) {
+  var a = DATA.mine[i], c = document.getElementById('m' + i);
+  var t = $('textarea', c), s = $('.row select', c), m = $('.msg', c);
+  var txt = t.value.trim(), st = s ? s.value : '';
+  if (!txt) { m.style.color = 'var(--c-danger)'; m.textContent = TEXT.writeFirst; return; }
+  if (st === 'Done' && a.parts && a.parts.length && !a.ready && !confirm(TEXT.closeEarly)) return;
+  busy(c, true);
+  post({ action: 'update', id: a.id, text: txt, status: st }, function (r) {
+    if (r.preview) {
+      a.latest = txt; a.lastWhen = r.when; a.lastBy = DATA.name; if (st) a.status = st;
+      $('.last', c).outerHTML = lastBlock(a); $('.status', c).textContent = a.status;
+      t.value = ''; busy(c, false); m.style.color = 'var(--c-ok)'; m.textContent = TEXT.saved; return;
+    }
+    refresh(a.id, st === 'Done' ? 'Closed as Done ✓' : TEXT.saved);
+  }, function (e) { showErr(c, e); });
+}
+
+/* "My part is done" – a comment is required */
+function submitPart(i) {
+  var a = DATA.mine[i], c = document.getElementById('m' + i);
+  var t = $('textarea', c), m = $('.msg', c), txt = t.value.trim();
+  if (!txt) { m.style.color = 'var(--c-danger)'; m.textContent = TEXT.needComment; t.focus(); return; }
+  busy(c, true);
+  post({ action: 'submit', id: a.id, text: txt }, function (r) {
+    if (r.preview) { busy(c, false); m.style.color = 'var(--c-ok)'; m.textContent = TEXT.submitted + ' (preview – not saved)'; return; }
+    refresh(a.id, TEXT.submitted);
+  }, function (e) { showErr(c, e); });
+}
+
+function toggleSendBack(i, j) {
+  var f = document.getElementById('sb' + i + '_' + j);
+  if (f) { f.classList.toggle('on'); var inp = $('input', f); if (f.classList.contains('on') && inp) inp.focus(); }
+}
+
+/* Accountable person: accept or send back someone's submitted part */
+function review(i, j, decision, btn) {
+  var a = DATA.mine[i], p = a.parts[j], c = document.getElementById('m' + i), m = $('.msg', c);
+  var reason = '';
+  if (decision === 'sendback') {
+    var inp = $('#sb' + i + '_' + j + ' input');
+    reason = inp ? inp.value.trim() : '';
+    if (!reason) { m.style.color = 'var(--c-danger)'; m.textContent = TEXT.sendBackReason; if (inp) inp.focus(); return; }
+  }
+  busy(c, true);
+  post({ action: 'review', id: a.id, target: p.name, decision: decision, text: reason }, function (r) {
+    if (r.preview) { busy(c, false); m.style.color = 'var(--c-ok)'; m.textContent = (decision === 'accept' ? 'Accepted' : 'Sent back') + ' (preview – not saved)'; return; }
+    refresh(a.id, decision === 'accept' ? 'Accepted ' + p.name + '\'s part ✓' : 'Sent back to ' + p.name);
+  }, function (e) { showErr(c, e); });
 }
 
 loadData();
