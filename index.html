@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<!--
+  index.html (GitHub page). Same design as the page inside Code.gs (TEMPLATES.Page).
+  Page.html – the personal page people open from their email.
+
+  HOW TO EDIT
+  - Colours and fonts:  the THEME block at the top of <style> (your palette, as H S L numbers).
+    The block right after it decides which theme colour is used where.
+  - Wording (headings, buttons, labels):  the TEXT object at the top of <script>.
+  - Layout of a card:  the functions myCard() and fyiCard() in <script>.
+
+  HOW TO PREVIEW
+  - On your computer: save this file and double-click it. It opens with SAMPLE data,
+    and "Save update" pretends to save. Nothing touches your sheet.
+  - Live, with real data: in Apps Script use Deploy → Test deployments → Web app URL,
+    and add  ?k=<someone's Link key>  to the end. That link always shows your latest SAVED
+    version, without redeploying. (Only you can open test links.)
+-->
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My actions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ THEME: EDIT COLOURS AND FONTS HERE ============ */
+  :root {
+    /* Colors (H S L) */
+    --background: 42 38% 95%;
+    --foreground: 213 37% 16%;
+    --border: 39 19% 84%;
+    --card: 42 38% 95%;
+    --card-foreground: 213 37% 16%;
+    --card-border: 39 19% 84%;
+    --popover: 42 42% 98%;
+    --popover-foreground: 213 37% 16%;
+    --primary: 47 96% 51%;
+    --primary-foreground: 213 40% 15%;
+    --secondary: 210 26% 91%;
+    --secondary-foreground: 213 35% 22%;
+    --muted: 40 20% 90%;
+    --muted-foreground: 214 17% 45%;
+    --accent: 170 31% 36%;
+    --accent-foreground: 40 42% 97%;
+    --destructive: 6 64% 47%;
+    --destructive-foreground: 40 42% 97%;
+    --input: 39 19% 81%;
+    --ring: 170 31% 36%;
+
+    /* Sidebar ("On this page" panel) */
+    --sidebar: 213 39% 16%;
+    --sidebar-foreground: 40 31% 91%;
+    --sidebar-border: 213 28% 26%;
+    --sidebar-primary: 47 96% 58%;
+    --sidebar-primary-foreground: 213 40% 15%;
+    --sidebar-accent: 213 31% 23%;
+    --sidebar-accent-foreground: 40 31% 95%;
+
+    /* Fonts */
+    --app-font-sans: "DM Sans", sans-serif;
+    --app-font-mono: "Space Grotesk", monospace;
+
+    /* Other */
+    --radius: 0.7rem;
+    --chart-1: 170 31% 36%;
+    --chart-2: 47 96% 51%;
+    --chart-3: 6 64% 47%;
+    --chart-4: 213 48% 43%;
+    --chart-5: 30 62% 53%;
+    --shadow-soft: 0 14px 30px rgba(32, 48, 65, 0.06);
+
+    /* Root defaults */
+    font-family: var(--app-font-sans);
+    font-size: 18px;
+    line-height: 1.45;
+    letter-spacing: 0.18px;
+    color: hsl(var(--foreground));
+    background: hsl(var(--background));
+    color-scheme: light;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* How the page uses the theme (change these to re-map colours) */
+  :root {
+    --c-brand: hsl(var(--accent));                 /* IDs, active tab, links */
+    --c-brand-soft: hsl(var(--accent) / 0.12);
+    --c-bg: hsl(var(--background));
+    --c-card: hsl(var(--popover));                 /* cards sit slightly lighter than the page */
+    --c-line: hsl(var(--border));
+    --c-text: hsl(var(--foreground));
+    --c-muted: hsl(var(--muted-foreground));
+    --c-danger: hsl(var(--destructive));
+    --c-danger-dot: hsl(var(--destructive));
+    --c-ok: hsl(var(--accent));
+    --c-new: hsl(var(--primary-foreground));
+    --c-new-bg: hsl(var(--primary) / 0.4);
+    --c-font: var(--app-font-sans);
+    --c-mono: var(--app-font-mono);
+  }
+  /* ============================================================ */
+
+  * { box-sizing: border-box; }
+  body { font-family: var(--c-font); background: var(--c-bg); color: var(--c-text); margin: 0; padding: 16px; font-size: 16px; }
+  .wrap { max-width: 1280px; margin: 0 auto; }
+  h1 { font-size: 24px; margin: 8px 0 2px; }
+  .sub { color: var(--c-muted); margin: 0 0 14px; font-size: 14px; }
+
+  /* Tabs */
+  .top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: 8px 24px;
+         border-bottom: 1px solid var(--c-line); margin-bottom: 16px; }
+  .top .tabs { justify-self: center; }
+  .top .sub { margin-bottom: 10px; }
+  .tabs { display: flex; gap: 4px; }
+  .tab { margin-bottom: -1px; }
+  /* only very narrow phones may need to swipe the tabs sideways; never show a vertical scroll bar */
+  @media (max-width: 400px) { .tabs { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; } .tab { margin-bottom: 0; } }
+  @media (max-width: 640px) { .top { display: block; } }
+  /* "Since your last visit" line */
+  .since { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; background: hsl(var(--primary) / 0.16);
+           border: 1px solid hsl(var(--primary) / 0.45); border-radius: var(--radius); padding: 10px 14px; margin: 0 0 16px; font-size: 15px; }
+  .since b { margin-right: 4px; }
+  .since .sep { color: var(--c-muted); }
+  .since-link { background: none; border: 0; padding: 2px 4px; font: inherit; color: var(--c-brand); font-weight: 700;
+                text-decoration: underline; text-underline-offset: 3px; cursor: pointer; border-radius: 6px; }
+  .since-link.on { background: var(--c-brand); color: hsl(var(--accent-foreground)); text-decoration: none; }
+  .since-clear { margin-left: auto; background: hsl(var(--popover)); border: 1px solid hsl(var(--input)); border-radius: 16px;
+                 padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .badge-upd { font-size: 11px; font-weight: bold; color: hsl(var(--accent)); background: hsl(var(--accent) / 0.12);
+               border-radius: 10px; padding: 2px 8px; }
+  /* (i) icon and its tooltip */
+  .tip { position: relative; display: inline-flex; align-self: center; vertical-align: middle; margin-left: 6px; }
+  .info { width: 24px; height: 24px; border-radius: 50%; border: 1px solid hsl(var(--input)); background: hsl(var(--popover));
+          color: var(--c-brand); font: 700 13px/1 var(--c-mono); cursor: help; padding: 0;
+          display: inline-flex; align-items: center; justify-content: center; }
+  .tip:hover .info, .info:focus { background: var(--c-brand); color: hsl(var(--accent-foreground)); border-color: var(--c-brand); }
+  .tipbox { display: none; position: absolute; z-index: 30; top: calc(100% + 10px); left: 50%; transform: translateX(-50%);
+            width: 440px; max-width: calc(100vw - 32px); text-align: left; white-space: normal;
+            background: hsl(var(--sidebar)); color: hsl(var(--sidebar-foreground)); border-radius: var(--radius);
+            padding: 12px 14px; font-size: 13px; line-height: 1.45; box-shadow: 0 14px 30px rgba(32, 48, 65, 0.25); }
+  .tipbox::before { content: ""; position: absolute; top: -6px; left: 50%; margin-left: -6px; border: 6px solid transparent;
+                    border-top: 0; border-bottom-color: hsl(var(--sidebar)); }
+  .tip:hover .tipbox, .tip:focus-within .tipbox { display: block; }
+  .help-ttl { display: block; font-weight: 700; margin-bottom: 6px; color: hsl(var(--sidebar-primary)); }
+  .tipbox dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin: 0; }
+  .tipbox dt { font-weight: 700; }
+  .tipbox dd { margin: 0; color: hsl(var(--sidebar-foreground) / 0.8); }
+  /* on phones the tooltip opens as a panel at the bottom of the screen */
+  @media (max-width: 640px) {
+    .tipbox { position: fixed; top: auto; bottom: 16px; left: 16px; right: 16px; width: auto; max-width: none; transform: none; }
+    .tipbox::before { display: none; }
+    .tipbox dl { grid-template-columns: 1fr; } .tipbox dd { margin-bottom: 6px; }
+  }
+  .tab { background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px; font: inherit;
+         color: var(--c-muted); cursor: pointer; white-space: nowrap; }
+  .tab.on { color: var(--c-brand); border-bottom-color: var(--c-brand); font-weight: bold; }
+  .tab .n { font-size: 12px; background: var(--c-brand-soft); color: var(--c-brand); border-radius: 10px; padding: 1px 7px; margin-left: 4px; }
+
+  /* Layout: list + "On this page" panel */
+  .layout { display: block; }
+  .toc { display: none; }
+  .jumpbar { position: sticky; top: 0; z-index: 5; background: var(--c-bg); padding: 6px 0 10px; }
+  .jump { width: 100%; padding: 9px; border: 1px solid hsl(var(--input)); border-radius: 8px; font: inherit; background: hsl(var(--popover)); }
+  @media (min-width: 900px) {
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: 56px; align-items: start; }
+    .jumpbar { display: none; }
+    .toc { display: block; position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow: auto;
+           background: var(--c-card); border: 1px solid var(--c-line); border-radius: var(--radius); padding: 12px; }
+  }
+  .tocttl { font-weight: bold; font-size: 13px; margin-bottom: 8px; }
+  .toch { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--c-muted); margin: 8px 0 4px; }
+  .tocl { display: block; font-size: 13px; color: var(--c-text); text-decoration: none; padding: 5px 8px;
+          border-left: 3px solid transparent; border-radius: 0 6px 6px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tocl b { color: var(--c-brand); }
+  .tocl:hover { background: hsl(var(--muted)); }
+  .tocl.act { background: var(--c-brand-soft); border-left-color: var(--c-brand); }
+  .tocl.done::after { content: " ✓"; color: var(--c-ok); }
+
+  /* Summary tiles (Review tab) */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; margin-bottom: 14px; }
+  .tile { background: var(--c-card); border: 1px solid var(--c-line); border-radius: var(--radius); padding: 10px 12px; text-align: left;
+          font: inherit; cursor: pointer; }
+  .tile .v { font-size: 24px; font-weight: bold; }
+  .tile .l { font-size: 12px; color: var(--c-muted); margin-top: 2px; }
+  .tile.on { border-color: var(--c-brand); box-shadow: 0 0 0 2px var(--c-brand-soft); }
+  .tile.warn .v { color: var(--c-danger); }
+  .tile.good .v { color: var(--c-ok); }
+
+  /* Filters */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip { background: hsl(var(--popover)); color: var(--c-text); border: 1px solid hsl(var(--input)); border-radius: 16px; padding: 6px 12px;
+          font: inherit; font-size: 13px; cursor: pointer; }
+  .chip span { color: var(--c-muted); margin-left: 4px; }
+  .chip.on { background: var(--c-brand); color: hsl(var(--accent-foreground)); border-color: var(--c-brand); }
+  .chip.on span { color: hsl(var(--accent-foreground) / 0.8); }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filters select, .search { padding: 9px 12px; border: 1px solid hsl(var(--input)); border-radius: 8px; font: inherit; background: hsl(var(--popover)); }
+  .search { flex: 1; min-width: 180px; width: 100%; }
+  #p-mine > .search { margin-bottom: 12px; }
+
+  /* Cards */
+  .card { background: var(--c-card); border: 1px solid var(--c-line); border-radius: var(--radius); margin-bottom: 8px;
+          scroll-margin-top: 70px; transition: box-shadow .3s; }
+  @media (min-width: 900px) { .card { scroll-margin-top: 16px; } }
+  .card.flash { box-shadow: 0 0 0 3px hsl(var(--ring) / 0.45); }
+  summary { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  .id { font-weight: bold; color: var(--c-brand); flex: none; }
+  .title { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card[open] .title { white-space: normal; }
+  .right { display: flex; align-items: center; gap: 8px; flex: none; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c-danger-dot); }
+  .status { font-size: 12px; background: var(--c-brand-soft); border-radius: 12px; padding: 3px 10px; }
+  .badge-new { font-size: 11px; font-weight: bold; color: var(--c-new); background: var(--c-new-bg); border-radius: 10px; padding: 2px 8px; }
+  .body { padding: 0 14px 14px; }
+  .origin { font-size: 13px; color: hsl(var(--secondary-foreground)); margin-bottom: 4px; }
+  .meta { font-size: 13px; color: var(--c-muted); }
+  .meta .role { color: var(--c-text); font-weight: 700; }
+  .flag { font-size: 13px; color: var(--c-danger); margin-top: 6px; }
+  .last { font-size: 13px; margin: 10px 0; background: hsl(var(--muted) / 0.6); padding: 8px 10px; border-radius: 6px; }
+  .lasttext { margin-top: 6px; white-space: pre-wrap; }
+  .lasthead { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 8px; }
+  .lasthead .by { margin-top: 0; }
+  .when { font-family: var(--c-mono); font-size: 11.5px; background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground));
+          border: 1px solid hsl(var(--border)); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+  .by { color: var(--c-muted); font-size: 12px; margin-top: 4px; }
+  textarea { width: 100%; min-height: 70px; padding: 8px; font: inherit; border: 1px solid hsl(var(--input)); border-radius: 6px; }
+  .row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .row select { padding: 8px; border: 1px solid hsl(var(--input)); border-radius: 6px; font: inherit; }
+  .note { font-size: 12px; color: var(--c-muted); }
+  .save { background: var(--c-brand); color: hsl(var(--accent-foreground)); border: 0; border-radius: 6px; padding: 9px 16px; font: inherit; cursor: pointer; }
+  .save:disabled { opacity: .6; }
+  .msg { font-size: 13px; margin-top: 6px; }
+
+  /* Done since last visit */
+  .done { background: var(--c-card); border: 1px solid var(--c-line); border-radius: var(--radius); margin-bottom: 14px; }
+  .done > summary { display: block; font-weight: bold; }
+  .done .count { color: var(--c-ok); }
+  .doneitem { padding: 10px 14px; border-top: 1px solid var(--c-line); font-size: 14px; }
+  .doneitem .tick { color: var(--c-ok); font-weight: bold; margin-right: 6px; }
+
+  .empty { color: var(--c-muted); padding: 20px 0; }
+  .ver { margin: 32px 0 8px; font-size: 11px; color: var(--c-muted); text-align: center; }
+  .error { background: var(--c-card); border: 1px solid var(--c-line); border-radius: var(--radius); padding: 20px; }
+
+  /* ---- theme touches ---- */
+  h1 { font-family: var(--c-font); font-weight: 700; letter-spacing: -0.2px; }
+  .id, .tocl b, .tile .v, .tab .n, .chip span { font-family: var(--c-mono); }
+  .card, .tile, .done { box-shadow: var(--shadow-soft); }
+  .save { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); font-weight: 700; }
+  .save:hover { filter: brightness(0.97); }
+  .chip.on { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); border-color: hsl(var(--accent)); }
+  .status { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); }
+  .tile.on { border-color: hsl(var(--accent)); box-shadow: 0 0 0 2px hsl(var(--accent) / 0.2), var(--shadow-soft); }
+  .tile.good .v { color: hsl(var(--accent)); }
+  textarea:focus, select:focus, input:focus, button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 1px; }
+  /* "On this page" panel uses the sidebar colours */
+  @media (min-width: 900px) {
+    .toc { background: hsl(var(--sidebar)); border-color: hsl(var(--sidebar-border)); color: hsl(var(--sidebar-foreground)); }
+  }
+  .toc .tocttl { color: hsl(var(--sidebar-foreground)); }
+  .toc .toch { color: hsl(var(--sidebar-foreground) / 0.6); }
+  .toc .tocl { color: hsl(var(--sidebar-foreground)); }
+  .toc .tocl b { color: hsl(var(--sidebar-primary)); }
+  .toc .tocl:hover { background: hsl(var(--sidebar-accent)); }
+  .toc .tocl.act { background: hsl(var(--sidebar-accent)); color: hsl(var(--sidebar-accent-foreground)); border-left-color: hsl(var(--sidebar-primary)); }
+  .toc .tocl.done::after { color: hsl(var(--sidebar-primary)); }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<!-- On the Google page, Code.gs puts the data here. On the GitHub page this stays empty and the data is fetched. -->
+<script type="application/json" id="app-data"></script>
+
+<script>
+/* ============ EDIT WORDING HERE ============ */
+var TEXT = {
+  hello: 'Hi ',
+  lastVisit: 'Your last visit: ',
+  tabMine: 'My actions',
+  tabFyi: 'Review',
+  mineIntro: 'Actions you are working on. Tap one to see it and add an update.',
+  fyiIntro: 'Actions you are Informed on, to review. Read only.',
+  infoLabel: 'How these filters work',
+  /* Shown when someone taps the (i) icon. {days} is replaced with the 'needs update' limit. */
+  helpMine: [
+    ['Overdue', 'The due date has passed and the action is not Done yet.'],
+    ['Needs update', 'Nobody has posted an update for {days} days or more (or there is no update yet).'],
+    ["I'm responsible/accountable", 'Actions where you are Responsible or Accountable, not only Support.'],
+    ['New', 'The action was created since your last visit.'],
+    ['Updated', 'Someone else posted an update since your last visit.'],
+    ['Status', 'Only an Accountable person can change the status. Done actions leave this list.'],
+    ['Order', 'Overdue first, then Needs update, then by due date.']
+  ],
+  helpFyi: [
+    ['Open', 'Actions you are Informed on that are not Done yet.'],
+    ['Overdue', 'The due date has passed and the action is not Done yet.'],
+    ['Needs update', 'Nobody has posted an update for {days} days or more (or there is no update yet).'],
+    ['Updated', 'Someone posted an update since your last visit.'],
+    ['Completed', 'Actions marked Done since your last visit (the last 7 days on your first visit).'],
+    ['People / meetings', 'Show only actions where that person is Responsible or Accountable, or that came from that meeting.']
+  ],
+  noMine: 'You have no open actions right now.',
+  noFyi: 'Nothing to review right now.',
+  nothingMatches: 'Nothing matches these filters.',
+  onThisPage: 'On this page',
+  jump: 'Jump to action…',
+  search: 'Search by ID or words',
+  updatePlaceholder: "What's the latest on this?",
+  save: 'Save update',
+  saving: 'Saving…',
+  saved: 'Saved ✓',
+  writeFirst: 'Please write an update first.',
+  statusUnchanged: 'Status unchanged',
+  onlyAccountable: function (who) { return 'Only ' + (who || 'an Accountable person') + ' can change the status.'; },
+  lastUpdate: 'Last update',
+  noUpdates: 'No updates yet',
+  doneTitle: 'Completed ',
+  newBadge: 'Updated',          /* someone else posted an update since the last visit */
+  newActionBadge: 'New',        /* action created since the last visit */
+  summaryCreated: function (n) { return n + ' new action' + (n === 1 ? '' : 's'); },
+  summaryCompleted: function (n) { return n + ' completed'; },
+  summaryUpdated: function (n) { return n + (n === 1 ? ' has' : ' had') + ' an update'; },
+  summaryNothing: 'nothing new.',
+  showAll: 'Show all',
+  allPeople: 'All people',
+  allMeetings: 'All meetings',
+  loading: 'Loading your actions…',
+  noLinkTitle: 'Action Tracker',
+  noLink: 'Please open your page using the button in your latest reminder email.',
+  offlineTitle: 'Could not load',
+  offline: 'Your actions could not be loaded. Check your internet connection and refresh the page.'
+};
+/* ========================================== */
+
+/* SAMPLE data – placeholder names (User, Sam…), generic actions and meetings (Meeting A, B…). Only used when you open this file on your computer
+   (double-click it) or add ?demo to the address.
+   It covers every case: overdue, no updates, new updates, accountable / not accountable,
+   several meetings and people, and actions completed since the last visit.
+   To test the "Link not recognised" screen, add  #error  to the end of the address. */
+var SAMPLE = {
+ "staleDays": 7,
+ "name": "User",
+ "key": "sample",
+ "prevVisit": "14 Oct 2026, 5:40 PM",
+ "statuses": [
+  "Pending",
+  "Done"
+ ],
+ "doneLabel": "since your last visit (14 Oct 2026, 5:40 PM)",
+ "mine": [
+  {
+   "id": "31",
+   "item": "Prepare the quarterly summary",
+   "roles": [
+    "Responsible",
+    "Accountable"
+   ],
+   "ra": true,
+   "canStatus": true,
+   "accountable": "User",
+   "status": "Pending",
+   "due": "10 Oct 2026",
+   "priority": "High",
+   "meeting": "Meeting A",
+   "created": "14 Oct 2026",
+   "latest": "Progress note.",
+   "lastWhen": "15 Oct 2026, 10:00 AM",
+   "lastBy": "User",
+   "overdue": 1,
+   "stale": 0,
+   "flags": "Overdue",
+   "isNew": false,
+   "isNewAction": false
+  },
+  {
+   "id": "40",
+   "item": "Review the draft plan",
+   "roles": [
+    "Responsible"
+   ],
+   "ra": true,
+   "canStatus": false,
+   "accountable": "Taylor",
+   "status": "Pending",
+   "due": "12 Oct 2026",
+   "priority": "Medium",
+   "meeting": "Meeting B",
+   "created": "30 Sep 2026",
+   "latest": "",
+   "lastWhen": "",
+   "lastBy": "",
+   "overdue": 1,
+   "stale": 1,
+   "flags": "Overdue · No update yet",
+   "isNew": false,
+   "isNewAction": false
+  },
+  {
+   "id": "35",
+   "item": "Check the monthly figures",
+   "roles": [
+    "Support"
+   ],
+   "ra": false,
+   "canStatus": false,
+   "accountable": "Jordan",
+   "status": "Pending",
+   "due": "24 Nov 2026",
+   "priority": "",
+   "meeting": "Meeting C",
+   "created": "07 Oct 2026",
+   "latest": "Progress note.",
+   "lastWhen": "15 Oct 2026, 4:20 PM",
+   "lastBy": "Jordan",
+   "overdue": 0,
+   "stale": 0,
+   "flags": "",
+   "isNew": true,
+   "isNewAction": false
+  },
+  {
+   "id": "36",
+   "item": "Schedule the follow-up session",
+   "roles": [
+    "Responsible"
+   ],
+   "ra": true,
+   "canStatus": false,
+   "accountable": "Taylor",
+   "status": "Pending",
+   "due": "30 Nov 2026",
+   "priority": "Medium",
+   "meeting": "Meeting D",
+   "created": "09 Oct 2026",
+   "latest": "",
+   "lastWhen": "",
+   "lastBy": "",
+   "overdue": 0,
+   "stale": 1,
+   "flags": "No update yet",
+   "isNew": false,
+   "isNewAction": false
+  },
+  {
+   "id": "41",
+   "item": "Set up a recurring check-in",
+   "roles": [
+    "Accountable"
+   ],
+   "ra": true,
+   "canStatus": true,
+   "accountable": "User, Sam",
+   "status": "Pending",
+   "due": "15 Dec 2026",
+   "priority": "Low",
+   "meeting": "Meeting A",
+   "created": "14 Oct 2026",
+   "latest": "Progress note.",
+   "lastWhen": "16 Oct 2026, 11:30 AM",
+   "lastBy": "Casey",
+   "overdue": 0,
+   "stale": 0,
+   "flags": "",
+   "isNew": true,
+   "isNewAction": true
+  },
+  {
+   "id": "42",
+   "item": "Finish the pending sign-offs",
+   "roles": [
+    "Responsible",
+    "Accountable"
+   ],
+   "ra": true,
+   "canStatus": true,
+   "accountable": "User",
+   "status": "Pending",
+   "due": "05 Nov 2026",
+   "priority": "High",
+   "meeting": "Meeting C",
+   "created": "07 Oct 2026",
+   "latest": "Progress note.",
+   "lastWhen": "03 Oct 2026, 2:10 PM",
+   "lastBy": "User",
+   "overdue": 0,
+   "stale": 1,
+   "flags": "No update for 9 days",
+   "isNew": false,
+   "isNewAction": false
+  }
+ ],
+ "fyi": [
+  {
+   "id": "32",
+   "item": "Agree weekly targets",
+   "accountable": "Taylor, Sam",
+   "status": "Pending",
+   "due": "12 Oct 2026",
+   "priority": "High",
+   "meeting": "Meeting A",
+   "created": "14 Oct 2026",
+   "latest": "Progress note.",
+   "lastWhen": "16 Oct 2026, 11:05 AM",
+   "lastBy": "Sam",
+   "overdue": 1,
+   "stale": 0,
+   "flags": "Overdue",
+   "isNew": true,
+   "responsible": "Team A",
+   "isNewAction": false
+  },
+  {
+   "id": "33",
+   "item": "Publish the weekly report",
+   "accountable": "Jordan",
+   "status": "Pending",
+   "due": "—",
+   "priority": "",
+   "meeting": "Meeting A",
+   "created": "14 Oct 2026",
+   "latest": "",
+   "lastWhen": "",
+   "lastBy": "",
+   "overdue": 0,
+   "stale": 1,
+   "flags": "No update yet",
+   "isNew": false,
+   "responsible": "Jordan",
+   "isNewAction": false
+  },
+  {
+   "id": "37",
+   "item": "Try out the new tool",
+   "accountable": "Taylor",
+   "status": "Pending",
+   "due": "05 Dec 2026",
+   "priority": "Low",
+   "meeting": "Meeting D",
+   "created": "09 Oct 2026",
+   "latest": "Progress note.",
+   "lastWhen": "13 Oct 2026, 3:00 PM",
+   "lastBy": "Morgan",
+   "overdue": 0,
+   "stale": 0,
+   "flags": "",
+   "isNew": false,
+   "responsible": "Morgan",
+   "isNewAction": false
+  },
+  {
+   "id": "38",
+   "item": "Compare the three options",
+   "accountable": "Sam",
+   "status": "Pending",
+   "due": "20 Oct 2026",
+   "priority": "Medium",
+   "meeting": "Meeting D",
+   "created": "09 Oct 2026",
+   "latest": "Progress note.",
+   "lastWhen": "15 Oct 2026, 6:45 PM",
+   "lastBy": "Casey",
+   "overdue": 0,
+   "stale": 0,
+   "flags": "",
+   "isNew": true,
+   "responsible": "Casey",
+   "isNewAction": false
+  },
+  {
+   "id": "39",
+   "item": "Combine the reports into one view",
+   "accountable": "Jordan",
+   "status": "Pending",
+   "due": "30 Sep 2026",
+   "priority": "High",
+   "meeting": "Meeting B",
+   "created": "30 Sep 2026",
+   "latest": "Progress note.",
+   "lastWhen": "02 Oct 2026, 12:00 PM",
+   "lastBy": "Jordan",
+   "overdue": 1,
+   "stale": 1,
+   "flags": "Overdue · No update for 9 days",
+   "isNew": false,
+   "responsible": "Jordan, Team B",
+   "isNewAction": false
+  },
+  {
+   "id": "43",
+   "item": "Collect questions for the next meeting",
+   "accountable": "Sam",
+   "status": "Pending",
+   "due": "28 Nov 2026",
+   "priority": "",
+   "meeting": "Meeting A",
+   "created": "14 Oct 2026",
+   "latest": "Progress note.",
+   "lastWhen": "16 Oct 2026, 9:15 AM",
+   "lastBy": "Morgan",
+   "overdue": 0,
+   "stale": 0,
+   "flags": "",
+   "isNew": false,
+   "responsible": "Team A",
+   "isNewAction": true
+  },
+  {
+   "id": "44",
+   "item": "Update the contact list",
+   "accountable": "Taylor",
+   "status": "Pending",
+   "due": "18 Nov 2026",
+   "priority": "Medium",
+   "meeting": "Meeting D",
+   "created": "09 Oct 2026",
+   "latest": "",
+   "lastWhen": "",
+   "lastBy": "",
+   "overdue": 0,
+   "stale": 1,
+   "flags": "No update yet",
+   "isNew": false,
+   "responsible": "Morgan",
+   "isNewAction": true
+  }
+ ],
+ "done": [
+  {
+   "id": "29",
+   "item": "Close the open items",
+   "closed": "15 Oct 2026",
+   "accountable": "Jordan",
+   "meeting": "Meeting C",
+   "latest": "Progress note.",
+   "lastBy": "Jordan"
+  },
+  {
+   "id": "27",
+   "item": "Share the updated guide",
+   "closed": "15 Oct 2026",
+   "accountable": "Sam",
+   "meeting": "Meeting B",
+   "latest": "Progress note.",
+   "lastBy": "User"
+  },
+  {
+   "id": "30",
+   "item": "Correct the duplicate entries",
+   "closed": "14 Oct 2026",
+   "accountable": "Jordan",
+   "meeting": "Meeting C",
+   "latest": "Progress note.",
+   "lastBy": "Jordan"
+  }
+ ],
+ "sinceLabel": "Since your last visit",
+ "summary": {
+  "created": 3,
+  "completed": 3,
+  "updated": 4
+ }
+};
+window.addEventListener('hashchange', function () { location.reload(); });
+if (location.hash === '#error') SAMPLE = { error: 'This link is not valid any more. Please use the button in your latest reminder email.' };
+
+/* ---------------- load data ---------------- */
+/* Three ways this page runs:
+   1. Google page   – data is already inside the page, saves go through google.script.run
+   2. GitHub page   – ?k=KEY&s=ID in the address; data is fetched from the script, saves are posted to it
+   3. Your computer – no key: SAMPLE data, saves are only pretend */
+var Q = new URLSearchParams(location.search);
+var KEY = Q.get('k') || '';
+var API_ID = (Q.get('s') || '').replace(/[^A-Za-z0-9_-]/g, '');
+var API = API_ID ? 'https://script.google.com/macros/s/' + API_ID + '/exec' : '';
+var GAS = typeof google !== 'undefined' && google.script && google.script.run;
+var DATA = null;
+try { DATA = JSON.parse(document.getElementById('app-data').textContent); } catch (e) { DATA = null; }
+var REMOTE = !DATA && !GAS && !!(KEY && API);
+var LIVE = GAS || REMOTE;
+
+function loadData() {
+  if (DATA) { render(); return; }
+  if (!REMOTE) {
+    var demo = Q.has('demo') || location.protocol === 'file:';
+    DATA = KEY ? { error: 'This link is incomplete. Please use the button in your latest reminder email.' }
+      : demo ? SAMPLE
+      : { errorTitle: TEXT.noLinkTitle, error: TEXT.noLink };
+    render(); return;
+  }
+  document.getElementById('app').innerHTML = '<p class="empty">' + TEXT.loading + '</p>';
+  fetch(API + '?api=data&k=' + encodeURIComponent(KEY))
+    .then(function (r) { return r.json(); })
+    .then(function (d) { DATA = d.ok === false ? { error: d.error } : d; render(); })
+    .catch(function () {
+      DATA = { errorTitle: TEXT.offlineTitle, error: TEXT.offline };
+      render();
+    });
+}
+
+/* ---------------- small helpers ---------------- */
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function $(sel, root) { return (root || document).querySelector(sel); }
+function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+function uniq(arr) { return arr.filter(function (x, i) { return x && arr.indexOf(x) === i; }).sort(); }
+function splitNames(s) { return String(s || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean); }
+
+var state = {
+  tab: 'mine',
+  mine: { f: 'all', q: '' },
+  fyi: { f: 'all', q: '', person: '', meeting: '' },
+  lock: 0
+};
+
+/* ---------------- card templates ---------------- */
+function lastBlock(a) {
+  if (!a.latest) return '<div class="last"><b>' + TEXT.lastUpdate + '</b><div class="lasttext"><i>' + TEXT.noUpdates + '</i></div></div>';
+  return '<div class="last"><div class="lasthead"><b>' + TEXT.lastUpdate + '</b>' +
+    (a.lastWhen ? '<span class="when">' + esc(a.lastWhen) + '</span>' : '') +
+    (a.lastBy ? '<span class="by">by ' + esc(a.lastBy) + '</span>' : '') + '</div>' +
+    '<div class="lasttext">' + esc(a.latest) + '</div></div>';
+}
+function originLine(a) {
+  if (!a.meeting && !a.created) return '';
+  return '<div class="origin">Raised' + (a.meeting ? ' in <b>' + esc(a.meeting) + '</b>' : '') +
+    (a.created ? ' on ' + esc(a.created) : '') + '</div>';
+}
+function summaryLine(a) {
+  return '<summary><span class="id">#' + esc(a.id) + '</span>' +
+    '<span class="title">' + esc(a.item) + '</span>' +
+    '<span class="right">' + (a.isNewAction ? '<span class="badge-new">' + TEXT.newActionBadge + '</span>' : '') +
+    (a.isNew ? '<span class="badge-upd">' + TEXT.newBadge + '</span>' : '') +
+    (a.overdue ? '<span class="dot" title="Overdue"></span>' : '') +
+    '<span class="status">' + esc(a.status) + '</span></span></summary>';
+}
+
+/* A card on the "My actions" tab */
+function myCard(a, i) {
+  var statusCtl = a.canStatus
+    ? '<select><option value="">' + TEXT.statusUnchanged + '</option>' +
+      DATA.statuses.map(function (s) { return '<option>' + esc(s) + '</option>'; }).join('') + '</select>'
+    : '<span class="note">' + esc(TEXT.onlyAccountable(a.accountable)) + '</span>';
+  return '<details class="card" id="m' + i + '">' + summaryLine(a) +
+    '<div class="body">' + originLine(a) +
+    '<div class="meta">Your role: <b class="role">' + esc(a.roles.join(', ')) + '</b> · Due: ' + esc(a.due) +
+    (a.priority ? ' · Priority: ' + esc(a.priority) : '') + '</div>' +
+    (a.flags ? '<div class="flag">' + esc(a.flags) + '</div>' : '') +
+    lastBlock(a) +
+    '<textarea maxlength="2000" placeholder="' + esc(TEXT.updatePlaceholder) + '"></textarea>' +
+    '<div class="row">' + statusCtl + '<button class="save" onclick="save(' + i + ')">' + TEXT.save + '</button></div>' +
+    '<div class="msg"></div></div></details>';
+}
+
+/* A card on the "Review" tab (read only) */
+function fyiCard(a, i) {
+  return '<details class="card" id="f' + i + '">' + summaryLine(a) +
+    '<div class="body">' + originLine(a) +
+    '<div class="meta">' + (a.myRole ? 'Your role: <b class="role">' + esc(a.myRole) + '</b> · ' : '') +
+    'Responsible: ' + esc(a.responsible || '—') + ' · Accountable: ' + esc(a.accountable || '—') +
+    ' · Due: ' + esc(a.due) + (a.priority ? ' · Priority: ' + esc(a.priority) : '') + '</div>' +
+    (a.flags ? '<div class="flag">' + esc(a.flags) + '</div>' : '') +
+    lastBlock(a) + '</div></details>';
+}
+
+function doneBlock() {
+  if (!DATA.done || !DATA.done.length) return '';
+  return '<details class="done"' + (DATA.done.length <= 5 ? ' open' : '') + '><summary><span class="count">✓ ' +
+    DATA.done.length + '</span>&nbsp;' + esc(TEXT.doneTitle + DATA.doneLabel) + '</summary>' +
+    DATA.done.map(function (d) {
+      return '<div class="doneitem"><span class="tick">✓</span><b>#' + esc(d.id) + '</b> ' + esc(d.item) +
+        '<div class="by">Done on ' + esc(d.closed) + (d.accountable ? ' · Accountable: ' + esc(d.accountable) : '') +
+        (d.meeting ? ' · ' + esc(d.meeting) : '') + '</div>' +
+        (d.latest ? '<div class="by">Last note: ' + esc(d.latest) + (d.lastBy ? ' (' + esc(d.lastBy) + ')' : '') + '</div>' : '') +
+        '</div>';
+    }).join('') + '</details>';
+}
+
+/* ---------------- page ---------------- */
+function render() {
+  var app = $('#app');
+  if (DATA.error) {
+    app.innerHTML = '<div class="error"><h1>' + esc(DATA.errorTitle || 'Link not recognised') + '</h1><p>' + esc(DATA.error) + '</p></div>';
+    return;
+  }
+  var hasFyi = DATA.fyi.length || DATA.done.length;
+  if (!DATA.mine.length && hasFyi) state.tab = 'fyi';
+
+  // the Review tab only appears when there is something to review
+  var tabs = hasFyi && DATA.mine.length
+    ? '<div class="tabs">' +
+      '<button class="tab" data-tab="mine" onclick="setTab(\'mine\')">' + TEXT.tabMine + '<span class="n">' + DATA.mine.length + '</span></button>' +
+      '<button class="tab" data-tab="fyi" onclick="setTab(\'fyi\')">' + TEXT.tabFyi + '<span class="n">' + DATA.fyi.length + '</span></button></div>'
+    : '';
+
+  app.innerHTML =
+    '<header class="top"><div class="hello"><h1>' + esc(TEXT.hello + DATA.name) + '</h1>' +
+    (DATA.prevVisit ? '<p class="sub">' + TEXT.lastVisit + esc(DATA.prevVisit) + '</p>' : '') + '</div>' +
+    tabs + '</header>' + summaryBar() +
+    '<div class="layout"><main>' +
+      '<section id="p-mine">' + minePanel() + '</section>' +
+      '<section id="p-fyi">' + (hasFyi ? fyiPanel() : '') + '</section>' +
+    '</main><aside class="toc" id="toc"></aside></div>' +
+    '<footer class="ver">Action Tracker · ' + esc(DATA.version || 'demo') + '</footer>';
+
+  setTab(state.tab);
+  observe();
+}
+
+/* "Since your last visit: 2 new actions · 3 completed · 5 had an update" – each part is clickable */
+function summaryBar() {
+  var S = DATA.summary;
+  if (!S) return '';
+  var parts = [];
+  if (S.created) parts.push(['created', TEXT.summaryCreated(S.created)]);
+  if (S.completed) parts.push(['completed', TEXT.summaryCompleted(S.completed)]);
+  if (S.updated) parts.push(['updated', TEXT.summaryUpdated(S.updated)]);
+  return '<div class="since" id="since"><b>' + esc(DATA.sinceLabel || 'Since your last visit') + ':</b> ' +
+    (parts.length
+      ? parts.map(function (p) {
+          return '<button type="button" class="since-link" data-s="' + p[0] + '" onclick="showSince(\'' + p[0] + '\', this)">' + esc(p[1]) + '</button>';
+        }).join('<span class="sep">·</span>') +
+        '<button type="button" class="since-clear" id="since-clear" onclick="clearSince()" hidden>' + TEXT.showAll + '</button>'
+      : '<span>' + TEXT.summaryNothing + '</span>') + '</div>';
+}
+
+function resetFilters(tab, f) {
+  state[tab].f = f; state[tab].q = '';
+  if (tab === 'fyi') { state.fyi.person = ''; state.fyi.meeting = ''; $$('#p-fyi select').forEach(function (x) { x.value = ''; }); }
+  $$('#p-' + tab + ' .search').forEach(function (x) { x.value = ''; });
+  $$('#p-' + tab + ' .chip, #p-' + tab + ' .tile').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-f') === f); });
+}
+
+function showSince(kind, el) {
+  var f = kind === 'created' ? 'created' : kind === 'updated' ? 'new' : 'done';
+  var test = kind === 'created' ? function (a) { return a.isNewAction; } : function (a) { return a.isNew; };
+  var tab = kind === 'completed' ? 'fyi' : (DATA.mine.some(test) ? 'mine' : 'fyi');
+  if (kind !== 'completed') resetFilters('mine', DATA.mine.length ? f : 'all');
+  resetFilters('fyi', f);
+  $$('.since-link').forEach(function (b) { b.classList.toggle('on', b === el); });
+  $('#since-clear').hidden = false;
+  setTab(tab);
+  apply('mine'); apply('fyi');
+  var first = $('#p-' + tab + ' .card:not([style*="none"]), #p-' + tab + ' details.done');
+  if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function clearSince() {
+  resetFilters('mine', 'all'); resetFilters('fyi', 'all');
+  $$('.since-link').forEach(function (b) { b.classList.remove('on'); });
+  $('#since-clear').hidden = true;
+  apply('mine'); apply('fyi');
+}
+
+/* The (i) icon. Hovering it (or tapping it on a phone) shows the explanation as a tooltip. */
+function infoButton(tab) {
+  var days = DATA.staleDays || 7, rows = tab === 'mine' ? TEXT.helpMine : TEXT.helpFyi;
+  return '<span class="tip"><button class="info" type="button" aria-label="' + esc(TEXT.infoLabel) +
+    '" aria-describedby="tip-' + tab + '">i</button>' +
+    '<span class="tipbox" role="tooltip" id="tip-' + tab + '"><span class="help-ttl">' + esc(TEXT.infoLabel) + '</span><dl>' +
+    rows.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(String(r[1]).replace('{days}', days)) + '</dd>'; }).join('') +
+    '</dl></span></span>';
+}
+
+function minePanel() {
+  var L = DATA.mine;
+  if (!L.length) return '<p class="empty">' + TEXT.noMine + '</p>';
+  var c = function (fn) { return L.filter(fn).length; };
+  var chips = [
+    ['all', 'All', L.length],
+    ['overdue', 'Overdue', c(function (a) { return a.overdue; })],
+    ['stale', 'Needs update', c(function (a) { return a.stale; })],
+    ['ra', "I'm responsible/accountable", c(function (a) { return a.ra; })]
+  ];
+  return '<p class="sub">' + TEXT.mineIntro + '</p>' +
+    '<div class="jumpbar" id="jump-mine"></div>' +
+    '<div class="chips">' + chips.map(function (x) {
+      return '<button class="chip' + (x[0] === state.mine.f ? ' on' : '') + '" data-f="' + x[0] +
+        '" onclick="setFilter(\'mine\',\'' + x[0] + '\',this)">' + x[1] + '<span>' + x[2] + '</span></button>';
+    }).join('') + infoButton('mine') + '</div>' +
+    (L.length > 5 ? '<input class="search" type="search" placeholder="' + esc(TEXT.search) +
+      '" oninput="state.mine.q=this.value;apply(\'mine\')">' : '') +
+    '<div id="list-mine">' + L.map(myCard).join('') + '</div>' +
+    '<p class="empty" id="none-mine" style="display:none">' + TEXT.nothingMatches + '</p>';
+}
+
+function fyiPanel() {
+  var L = DATA.fyi;
+  var c = function (fn) { return L.filter(fn).length; };
+  var tiles = [
+    ['all', 'Open', L.length, ''],
+    ['overdue', 'Overdue', c(function (a) { return a.overdue; }), 'warn'],
+    ['stale', 'Needs update', c(function (a) { return a.stale; }), 'warn'],
+    ['new', 'Updated', c(function (a) { return a.isNew; }), ''],
+    ['done', 'Completed', DATA.done.length, 'good']
+  ];
+  var people = uniq([].concat.apply([], L.map(function (a) { return splitNames(a.responsible).concat(splitNames(a.accountable)); })));
+  var meetings = uniq(L.map(function (a) { return a.meeting; }));
+  return '<div class="sub">' + TEXT.fyiIntro + infoButton('fyi') + '</div>' +
+    '<div class="tiles">' + tiles.map(function (t) {
+      return '<button class="tile ' + t[3] + (t[0] === state.fyi.f ? ' on' : '') + '" data-f="' + t[0] +
+        '" onclick="setFilter(\'fyi\',\'' + t[0] + '\',this)"><div class="v">' + t[2] + '</div><div class="l">' + t[1] + '</div></button>';
+    }).join('') + '</div>' +
+    '<div class="jumpbar" id="jump-fyi"></div>' +
+    '<div class="filters">' +
+      (people.length > 1 ? '<select onchange="state.fyi.person=this.value;apply(\'fyi\')"><option value="">' + TEXT.allPeople + '</option>' +
+        people.map(function (p) { return '<option>' + esc(p) + '</option>'; }).join('') + '</select>' : '') +
+      (meetings.length > 1 ? '<select onchange="state.fyi.meeting=this.value;apply(\'fyi\')"><option value="">' + TEXT.allMeetings + '</option>' +
+        meetings.map(function (m) { return '<option>' + esc(m) + '</option>'; }).join('') + '</select>' : '') +
+      (L.length > 5 ? '<input class="search" type="search" placeholder="' + esc(TEXT.search) +
+        '" oninput="state.fyi.q=this.value;apply(\'fyi\')">' : '') +
+    '</div>' +
+    '<div id="done-wrap">' + doneBlock() + '</div>' +
+    '<div id="list-fyi">' + (L.length ? L.map(fyiCard).join('') : '<p class="empty">' + TEXT.noFyi + '</p>') + '</div>' +
+    '<p class="empty" id="none-fyi" style="display:none">' + TEXT.nothingMatches + '</p>';
+}
+
+/* ---------------- tabs, filters, navigation ---------------- */
+function setTab(t) {
+  state.tab = t;
+  $$('.tab').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === t); });
+  $('#p-mine').style.display = t === 'mine' ? '' : 'none';
+  $('#p-fyi').style.display = t === 'fyi' ? '' : 'none';
+  buildNav();
+  apply(t);
+}
+
+function setFilter(tab, f, el) {
+  state[tab].f = f;
+  $$(tab === 'mine' ? '#p-mine .chip' : '#p-fyi .tile').forEach(function (b) { b.classList.toggle('on', b === el); });
+  apply(tab);
+}
+
+function matches(tab, a) {
+  var s = state[tab];
+  var q = s.q.toLowerCase().trim();
+  if (q && (a.id + ' ' + a.item).toLowerCase().indexOf(q) < 0) return false;
+  if (s.f === 'overdue' && !a.overdue) return false;
+  if (s.f === 'stale' && !a.stale) return false;
+  if (s.f === 'ra' && !a.ra) return false;
+  if (s.f === 'new' && !a.isNew) return false;
+  if (s.f === 'created' && !a.isNewAction) return false;
+  if (tab === 'fyi') {
+    if (s.person && splitNames(a.responsible).concat(splitNames(a.accountable)).indexOf(s.person) < 0) return false;
+    if (s.meeting && a.meeting !== s.meeting) return false;
+  }
+  return true;
+}
+
+function apply(tab) {
+  var L = tab === 'mine' ? DATA.mine : DATA.fyi;
+  var pre = tab === 'mine' ? 'm' : 'f';
+  var onlyDone = tab === 'fyi' && state.fyi.f === 'done';
+  var n = 0;
+  L.forEach(function (a, i) {
+    var ok = !onlyDone && matches(tab, a);
+    var card = document.getElementById(pre + i);
+    if (card) card.style.display = ok ? '' : 'none';
+    var link = $('.tocl[data-id="' + pre + i + '"]');
+    if (link) link.style.display = ok ? '' : 'none';
+    if (ok) n++;
+  });
+  if (tab === 'fyi') {
+    var dw = $('#done-wrap');
+    if (dw) {
+      dw.style.display = (state.fyi.f === 'all' || onlyDone) ? '' : 'none';
+      if (onlyDone && $('details.done', dw)) $('details.done', dw).open = true;
+    }
+  }
+  $$('#toc .tocg').forEach(function (g) {
+    g.style.display = $$('.tocl', g).some(function (l) { return l.style.display !== 'none'; }) ? '' : 'none';
+  });
+  var none = document.getElementById('none-' + tab);
+  if (none) none.style.display = (n || onlyDone || !L.length) ? 'none' : '';
+}
+
+/* "On this page" panel (computer) and "Jump to" dropdown (phone) for the current tab */
+function buildNav() {
+  var tab = state.tab, L = tab === 'mine' ? DATA.mine : DATA.fyi, pre = tab === 'mine' ? 'm' : 'f';
+  var toc = $('#toc');
+  $$('.jumpbar').forEach(function (j) { j.innerHTML = ''; });
+  if (L.length < 2) { toc.style.visibility = 'hidden'; return; }
+  toc.style.visibility = '';
+  var groups = [
+    ['Overdue', function (a) { return a.overdue; }],
+    ['Needs update', function (a) { return !a.overdue && a.stale; }],
+    ['On track', function (a) { return !a.overdue && !a.stale; }]
+  ];
+  toc.innerHTML = '<div class="tocttl">' + TEXT.onThisPage + '</div>' + groups.map(function (g) {
+    var items = L.map(function (a, i) { return { a: a, i: i }; }).filter(function (x) { return g[1](x.a); });
+    if (!items.length) return '';
+    return '<div class="tocg"><div class="toch">' + g[0] + '</div>' + items.map(function (x) {
+      return '<a href="#' + pre + x.i + '" class="tocl" data-id="' + pre + x.i + '" onclick="return go(\'' + pre + x.i + '\')">' +
+        '<b>#' + esc(x.a.id) + '</b> ' + esc(x.a.item) + '</a>';
+    }).join('') + '</div>';
+  }).join('');
+  var jb = document.getElementById('jump-' + tab);
+  if (jb) jb.innerHTML = '<select class="jump" onchange="if(this.value){go(this.value);this.value=\'\';}">' +
+    '<option value="">' + TEXT.jump + '</option>' +
+    L.map(function (a, i) { return '<option value="' + pre + i + '">#' + esc(a.id) + ' ' + esc(a.item.slice(0, 60)) + '</option>'; }).join('') +
+    '</select>';
+}
+
+function go(id) {
+  var c = document.getElementById(id);
+  if (!c) return false;
+  if (c.style.display === 'none') {               // clear filters so the action is visible
+    var t = state.tab;
+    state[t].f = 'all'; state[t].q = '';
+    if (t === 'fyi') { state.fyi.person = ''; state.fyi.meeting = ''; $$('#p-fyi select').forEach(function (s) { s.value = ''; }); }
+    $$('#p-' + t + ' .chip, #p-' + t + ' .tile').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-f') === 'all'); });
+    $$('#p-' + t + ' .search').forEach(function (s) { s.value = ''; });
+    apply(t);
+  }
+  c.open = true;
+  c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  c.classList.add('flash');
+  setTimeout(function () { c.classList.remove('flash'); }, 1200);
+  state.lock = Date.now() + 1500;
+  mark(id);
+  return false;
+}
+
+function mark(id) { $$('.tocl').forEach(function (l) { l.classList.toggle('act', l.getAttribute('data-id') === id); }); }
+
+function observe() {
+  if (!window.IntersectionObserver) return;
+  var io = new IntersectionObserver(function (es) {
+    es.forEach(function (e) { if (e.isIntersecting && Date.now() > state.lock) mark(e.target.id); });
+  }, { rootMargin: '0px 0px -70% 0px' });
+  $$('.card').forEach(function (c) { io.observe(c); });
+}
+
+/* ---------------- saving an update ---------------- */
+function save(i) {
+  var a = DATA.mine[i], c = document.getElementById('m' + i);
+  var t = $('textarea', c), s = $('.row select', c), b = $('.save', c), m = $('.msg', c);
+  var txt = t.value.trim(), st = s ? s.value : '';
+  if (!txt) { m.style.color = 'var(--c-danger)'; m.textContent = TEXT.writeFirst; return; }
+  b.disabled = true; b.textContent = TEXT.saving; m.textContent = '';
+
+  var ok = function (when) {
+    a.latest = txt; a.lastWhen = when; a.lastBy = DATA.name; a.stale = 0; a.isNew = false;
+    if (st) a.status = st;
+    $('.last', c).outerHTML = lastBlock(a);
+    $('.status', c).textContent = a.status;
+    var link = $('.tocl[data-id="m' + i + '"]'); if (link) link.classList.add('done');
+    t.value = ''; if (s) s.value = '';
+    b.disabled = false; b.textContent = TEXT.save; m.style.color = 'var(--c-ok)'; m.textContent = TEXT.saved;
+  };
+  var fail = function (e) {
+    b.disabled = false; b.textContent = TEXT.save; m.style.color = 'var(--c-danger)';
+    m.textContent = 'Could not save: ' + (e && e.message ? e.message : e);
+  };
+  if (GAS) {
+    google.script.run.withSuccessHandler(ok).withFailureHandler(fail).submitUpdate(DATA.key, a.id, txt, st);
+  } else if (REMOTE) {
+    fetch(API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },   /* plain text avoids an extra browser check */
+      body: JSON.stringify({ action: 'update', k: KEY, id: a.id, text: txt, status: st })
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (r) { if (r.ok) ok(r.when); else fail({ message: r.error }); })
+      .catch(function () { fail({ message: 'no connection, please try again' }); });
+  } else {
+    setTimeout(function () { ok('just now (preview – not saved)'); }, 400);
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
