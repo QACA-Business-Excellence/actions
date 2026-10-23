@@ -137,7 +137,7 @@
   .need { font-size: 13px; font-weight: 700; color: hsl(var(--accent)); margin-top: 6px; }
   .parts { margin: 10px 0; border: 1px solid var(--c-line); border-radius: 8px; overflow: hidden; }
   .parts-head { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--c-muted);
-                padding: 6px 10px; background: hsl(var(--muted) / 0.6); display: flex; justify-content: space-between; }
+                padding: 6px 10px; background: hsl(var(--muted) / 0.6); display: flex; justify-content: space-between; gap: 4px 12px; flex-wrap: wrap; }
   .part { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--c-line); flex-wrap: wrap; }
   .part:first-of-type { border-top: 0; }
   .part .pn { font-weight: 700; font-size: 14px; min-width: 120px; }
@@ -253,6 +253,16 @@
   .body { padding: 0 14px 14px; }
   .origin { font-size: 13px; color: hsl(var(--secondary-foreground)); margin-bottom: 4px; }
   .meta { font-size: 13px; color: var(--c-muted); }
+  /* R / A / S / C / I block on each card */
+  .rasci { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 4px 14px;
+           margin: 8px 0 2px; padding: 8px 10px; border-radius: 8px; background: var(--c-bg); border: 1px solid var(--c-line);
+           font-size: 13px; }
+  .rasci .rc { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+  .rasci .rk { flex: none; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 4px;
+               font-size: 11px; font-weight: 700; background: var(--c-brand-soft); color: var(--c-brand); cursor: help; }
+  .rasci .rv { min-width: 0; overflow-wrap: anywhere; }
+  .rasci .rv b { color: var(--c-text); }
+  .rasci .none { color: var(--c-muted); }
   .meta .role { color: var(--c-text); font-weight: 700; }
   .flag { font-size: 13px; color: var(--c-danger); margin-top: 6px; }
   .last { font-size: 13px; margin: 10px 0; background: hsl(var(--muted) / 0.6); padding: 8px 10px; border-radius: 6px; }
@@ -314,6 +324,7 @@
 <script>
 /* ============ EDIT WORDING HERE ============ */
 var TEXT = {
+  rasciNames: { R: 'Responsible', A: 'Accountable', S: 'Support', C: 'Consulted', I: 'Informed' },
   hello: 'Hi ',
   lastVisit: 'Your last visit: ',
   tabMine: 'My actions',
@@ -435,7 +446,14 @@ var SAMPLE = {
    "reviewCount": 0,
    "ready": false,
    "progress": "",
-   "sentBack": null
+   "sentBack": null,
+   "rasci": {
+    "R": "User",
+    "A": "User",
+    "S": "Casey",
+    "C": "",
+    "I": "Team B"
+   }
   },
   {
    "id": "40",
@@ -468,7 +486,14 @@ var SAMPLE = {
    "reviewCount": 0,
    "ready": false,
    "progress": "",
-   "sentBack": null
+   "sentBack": null,
+   "rasci": {
+    "R": "User",
+    "A": "Taylor",
+    "S": "",
+    "C": "Sam",
+    "I": "Team A"
+   }
   },
   {
    "id": "35",
@@ -501,7 +526,14 @@ var SAMPLE = {
    "reviewCount": 0,
    "ready": false,
    "progress": "",
-   "sentBack": null
+   "sentBack": null,
+   "rasci": {
+    "R": "Morgan",
+    "A": "Jordan",
+    "S": "User",
+    "C": "",
+    "I": "Team B"
+   }
   },
   {
    "id": "36",
@@ -553,6 +585,13 @@ var SAMPLE = {
     "by": "Taylor",
     "when": "16 Oct 2026, 4:10 PM",
     "note": "Please attach the interview schedule."
+   },
+   "rasci": {
+    "R": "User, Casey",
+    "A": "Taylor",
+    "S": "Morgan",
+    "C": "",
+    "I": "Team B"
    }
   },
   {
@@ -608,7 +647,14 @@ var SAMPLE = {
    "reviewCount": 1,
    "ready": false,
    "progress": "1/3 accepted · 1 waiting review · 1 not submitted",
-   "sentBack": null
+   "sentBack": null,
+   "rasci": {
+    "R": "Sam, Jordan, Taylor",
+    "A": "User, Sam",
+    "S": "Team B",
+    "C": "Morgan",
+    "I": "Team A"
+   }
   },
   {
    "id": "42",
@@ -642,7 +688,14 @@ var SAMPLE = {
    "reviewCount": 0,
    "ready": false,
    "progress": "",
-   "sentBack": null
+   "sentBack": null,
+   "rasci": {
+    "R": "User",
+    "A": "User",
+    "S": "",
+    "C": "",
+    "I": "Team B"
+   }
   }
  ],
  "fyi": [
@@ -666,7 +719,14 @@ var SAMPLE = {
    "isNewAction": false,
    "parts": [],
    "progress": "",
-   "waitingOn": ""
+   "waitingOn": "",
+   "rasci": {
+    "R": "Team A",
+    "A": "Taylor, Sam",
+    "S": "",
+    "C": "",
+    "I": "Team A"
+   }
   },
   {
    "id": "33",
@@ -688,7 +748,14 @@ var SAMPLE = {
    "isNewAction": false,
    "parts": [],
    "progress": "",
-   "waitingOn": ""
+   "waitingOn": "",
+   "rasci": {
+    "R": "Jordan",
+    "A": "Jordan",
+    "S": "",
+    "C": "",
+    "I": "Team A"
+   }
   },
   {
    "id": "37",
@@ -710,7 +777,14 @@ var SAMPLE = {
    "isNewAction": false,
    "parts": [],
    "progress": "",
-   "waitingOn": ""
+   "waitingOn": "",
+   "rasci": {
+    "R": "Morgan",
+    "A": "Taylor",
+    "S": "",
+    "C": "",
+    "I": "Team A"
+   }
   },
   {
    "id": "38",
@@ -732,7 +806,14 @@ var SAMPLE = {
    "isNewAction": false,
    "parts": [],
    "progress": "",
-   "waitingOn": ""
+   "waitingOn": "",
+   "rasci": {
+    "R": "Casey",
+    "A": "Sam",
+    "S": "",
+    "C": "",
+    "I": "Team A"
+   }
   },
   {
    "id": "39",
@@ -754,7 +835,14 @@ var SAMPLE = {
    "isNewAction": false,
    "parts": [],
    "progress": "2/3 accepted · 1 waiting review",
-   "waitingOn": "Jordan – to review 1 ⚠ 5 days"
+   "waitingOn": "Jordan – to review 1 ⚠ 5 days",
+   "rasci": {
+    "R": "Jordan, Team B",
+    "A": "Jordan",
+    "S": "",
+    "C": "",
+    "I": "Team A"
+   }
   },
   {
    "id": "43",
@@ -776,7 +864,14 @@ var SAMPLE = {
    "isNewAction": true,
    "parts": [],
    "progress": "",
-   "waitingOn": ""
+   "waitingOn": "",
+   "rasci": {
+    "R": "Team A",
+    "A": "Sam",
+    "S": "",
+    "C": "",
+    "I": "Team A"
+   }
   },
   {
    "id": "44",
@@ -798,7 +893,14 @@ var SAMPLE = {
    "isNewAction": true,
    "parts": [],
    "progress": "",
-   "waitingOn": ""
+   "waitingOn": "",
+   "rasci": {
+    "R": "Morgan",
+    "A": "Taylor",
+    "S": "",
+    "C": "",
+    "I": "Team A"
+   }
   }
  ],
  "done": [
@@ -836,7 +938,10 @@ var SAMPLE = {
   "completed": 3,
   "updated": 4
  },
- "reviewDays": 3
+ "reviewDays": 3,
+ "myTeams": [
+  "Team A"
+ ]
 };
 window.addEventListener('hashchange', function () { location.reload(); });
 if (location.hash === '#error') SAMPLE = { error: 'This link is not valid any more. Please use the button in your latest reminder email.' };
@@ -914,6 +1019,22 @@ function summaryLine(a) {
     '<span class="status">' + esc(a.status) + '</span></span></summary>';
 }
 
+/* R / A / S / C / I as on the Tracker. Your own name or team is in bold. */
+function rasciBlock(a) {
+  if (!a.rasci) return '';
+  var me = [DATA.name].concat(DATA.myTeams || []).map(function (x) { return String(x).toLowerCase(); });
+  var cell = function (v) {
+    if (!v) return '<span class="none">—</span>';
+    return v.split(',').map(function (n) {
+      n = n.trim();
+      return me.indexOf(n.toLowerCase()) >= 0 ? '<b>' + esc(n) + '</b>' : esc(n);
+    }).join(', ');
+  };
+  return '<div class="rasci">' + ['R', 'A', 'S', 'C', 'I'].map(function (k) {
+    return '<div class="rc"><span class="rk" title="' + TEXT.rasciNames[k] + '">' + k + '</span><span class="rv">' + cell(a.rasci[k]) + '</span></div>';
+  }).join('') + '</div>';
+}
+
 /* The list of parts (one per Responsible person). On the Accountable person's card: Accept / Send back buttons. */
 function partsBlock(a, i, canReview) {
   if (!a.parts || !a.parts.length) return '';
@@ -949,6 +1070,7 @@ function myCard(a, i) {
      '</b>' +
     (a.due ? ' · Due: ' + esc(a.due) : '') +
     (a.priority ? ' · Priority: ' + esc(a.priority) : '') + '</div>' +
+    rasciBlock(a) +
     (a.need ? '<div class="need">' + esc(a.need) + '</div>' : '') +
     (a.flags ? '<div class="flag">' + esc(a.flags) + '</div>' : '') +
     (a.sentBack ? '<div class="sbbox"><b>' + esc(TEXT.sentBackBy(a.sentBack.by, a.sentBack.when)) + '</b> ' + esc(a.sentBack.note) + '</div>' : '') +
@@ -965,9 +1087,10 @@ function myCard(a, i) {
 function fyiCard(a, i) {
   return '<details class="card" id="f' + i + '">' + summaryLine(a) +
     '<div class="body">' + originLine(a) +
-    '<div class="meta">' + (a.myRole ? 'Your role: <b class="role">' + esc(a.myRole) + '</b> · ' : '') +
-    'Responsible: ' + esc(a.responsible || '—') + ' · Accountable: ' + esc(a.accountable || '—') +
-    (a.due ? ' · Due: ' + esc(a.due) : '') + (a.priority ? ' · Priority: ' + esc(a.priority) : '') + '</div>' +
+    '<div class="meta">' + (a.myRole ? 'Your role: <b class="role">' + esc(a.myRole) + '</b>' : '') +
+    (a.due ? (a.myRole ? ' · ' : '') + 'Due: ' + esc(a.due) : '') +
+    (a.priority ? (a.myRole || a.due ? ' · ' : '') + 'Priority: ' + esc(a.priority) : '') + '</div>' +
+    rasciBlock(a) +
     (a.progress ? '<div class="progress">' + esc(a.progress) +
       (a.waitingOn ? ' <span class="wo">· Waiting on: ' + esc(a.waitingOn) + '</span>' : '') + '</div>' : '') +
     (a.flags ? '<div class="flag">' + esc(a.flags) + '</div>' : '') +
