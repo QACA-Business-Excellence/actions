@@ -275,6 +275,18 @@
   textarea { width: 100%; min-height: 70px; padding: 8px; font: inherit; border: 1px solid hsl(var(--input)); border-radius: 6px; }
   .row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
   .row select { padding: 8px; border: 1px solid hsl(var(--input)); border-radius: 6px; font: inherit; }
+  /* Pending / Done switch (Accountable only) */
+  .tgl { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; font-size: 14px; }
+  .tgl input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .tgl .track { position: relative; width: 44px; height: 24px; border-radius: 999px; background: hsl(var(--input));
+                transition: background .15s; flex: none; }
+  .tgl .knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff;
+               box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: left .15s; }
+  .tgl input:checked + .track { background: var(--c-ok); }
+  .tgl input:checked + .track .knob { left: 23px; }
+  .tgl input:focus-visible + .track { outline: 2px solid var(--c-brand); outline-offset: 2px; }
+  .tgl .tlabel { font-weight: 600; color: var(--c-muted); }
+  .tgl input:checked ~ .tlabel { color: var(--c-ok); }
   .note { font-size: 12px; color: var(--c-muted); }
   .save { background: var(--c-brand); color: hsl(var(--accent-foreground)); border: 0; border-radius: 6px; padding: 9px 16px; font: inherit; cursor: pointer; }
   .save:disabled { opacity: .6; }
@@ -364,6 +376,9 @@ var TEXT = {
   saved: 'Saved ✓',
   writeFirst: 'Please write an update first.',
   statusUnchanged: 'Status unchanged',
+  statusPending: 'Pending',
+  statusDone: 'Done – will close when you save',
+  saveAndClose: 'Save and close',
   onlyAccountable: function (who) { return 'Only ' + (who || 'an Accountable person') + ' can change the status.'; },
   lastUpdate: 'Last update',
   noUpdates: 'No updates yet',
@@ -1059,8 +1074,9 @@ function partsBlock(a, i, canReview) {
 /* A card on the "My actions" tab */
 function myCard(a, i) {
   var statusCtl = a.canStatus
-    ? '<select><option value="">' + TEXT.statusUnchanged + '</option>' +
-      DATA.statuses.map(function (s) { return '<option>' + esc(s) + '</option>'; }).join('') + '</select>'
+    ? '<label class="tgl"><input type="checkbox" onchange="toggleDone(' + i + ',this)">' +
+      '<span class="track"><span class="knob"></span></span>' +
+      '<span class="tlabel">' + esc(TEXT.statusPending) + '</span></label>'
     : '<span class="note">' + esc(TEXT.onlyAccountable(a.accountable)) + '</span>';
   var buttons = (a.canSubmit ? '<button class="save" onclick="submitPart(' + i + ')">' + TEXT.submitPart + '</button>' : '') +
     '<button class="save' + (a.canSubmit ? ' alt' : '') + '" onclick="save(' + i + ')">' + TEXT.save + '</button>';
@@ -1426,8 +1442,8 @@ function showErr(c, e) {
 /* Post an update (and, for the Accountable person, optionally a status) */
 function save(i) {
   var a = DATA.mine[i], c = document.getElementById('m' + i);
-  var t = $('textarea', c), s = $('.row select', c), m = $('.msg', c);
-  var txt = t.value.trim(), st = s ? s.value : '';
+  var t = $('textarea', c), s = $('.tgl input', c), m = $('.msg', c);
+  var txt = t.value.trim(), st = s && s.checked ? 'Done' : '';
   if (!txt) { m.style.color = 'var(--c-danger)'; m.textContent = TEXT.writeFirst; return; }
   if (st === 'Done' && a.parts && a.parts.length && !a.ready && !confirm(TEXT.closeEarly)) return;
   busy(c, true);
@@ -1439,6 +1455,14 @@ function save(i) {
     }
     refresh(a.id, st === 'Done' ? 'Closed as Done ✓' : TEXT.saved);
   }, function (e) { showErr(c, e); });
+}
+
+/* Pending / Done switch: changes the label and the Save button text */
+function toggleDone(i, el) {
+  var c = document.getElementById('m' + i), a = DATA.mine[i];
+  $('.tlabel', c).textContent = el.checked ? TEXT.statusDone : TEXT.statusPending;
+  var b = c.querySelectorAll('.btns .save'); b = b[b.length - 1];
+  b.textContent = el.checked ? TEXT.saveAndClose : TEXT.save;
 }
 
 /* "My part is done" – a comment is required */
